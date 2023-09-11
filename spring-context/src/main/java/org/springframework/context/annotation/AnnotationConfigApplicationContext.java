@@ -102,6 +102,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	public AnnotationConfigApplicationContext(String... basePackages) {
 		this();
 		scan(basePackages);
+		// 在进入这里的时候, 已经有了所以Bean的BeanDefinition
 		refresh();
 	}
 
