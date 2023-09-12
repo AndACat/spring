@@ -226,13 +226,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 	/**
 	 * Return an instance, which may be shared or independent, of the specified bean.
-	 * @param name the name of the bean to retrieve
-	 * @param requiredType the required type of the bean to retrieve
-	 * @param args arguments to use when creating a bean instance using explicit arguments
+	 * <br> 返回Bean的实例, 该实例可以是共享的, 也可以是独立的,
+	 * @param name the name of the bean to retrieve 需要检索的bean的名字
+	 * @param requiredType the required type of the bean to retrieve, 需要检索的bean的类型
+	 * @param args arguments to use when creating a bean instance using explicit arguments, 创建Bean实例的时候, 指定的构造函数的参数
 	 * (only applied when creating a new instance as opposed to retrieving an existing one)
-	 * @param typeCheckOnly whether the instance is obtained for a type check,
+	 * @param typeCheckOnly whether the instance is obtained for a type check, 是否在获取实例的时候, 进行类型检查
 	 * not for actual use
-	 * @return an instance of the bean
+	 * @return an instance of the bean 返回该bean的实例
 	 * @throws BeansException if the bean could not be created
 	 */
 	@SuppressWarnings("unchecked")
@@ -240,12 +241,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly)
 			throws BeansException {
 
+		// 获得转换后的名字, 必要时, 删掉工厂Bean前缀
 		String beanName = transformedBeanName(name);
 		Object beanInstance;
 
 		// Eagerly check singleton cache for manually registered singletons.
+		// 早期检查手动注册到BeanFactory中的单例Bean
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
+			// 这个对象已经存在了
 			if (logger.isTraceEnabled()) {
 				if (isSingletonCurrentlyInCreation(beanName)) {
 					logger.trace("Returning eagerly cached instance of singleton bean '" + beanName +

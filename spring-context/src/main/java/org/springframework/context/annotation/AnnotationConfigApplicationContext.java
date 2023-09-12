@@ -100,9 +100,12 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * @param basePackages the packages to scan for component classes
 	 */
 	public AnnotationConfigApplicationContext(String... basePackages) {
+		// 在父类构造器中实例化了AnnotationBeanDefinitionReader和ClassPathBeanDefinitionScanner
 		this();
+		// 开始扫描包, 得到所有的BeanDefinition, 内部使用了ClassPathBeanDefinitionScanner来扫描包
 		scan(basePackages);
 		// 在进入这里的时候, 已经有了所以Bean的BeanDefinition
+		// 接下来就涉及到将BeanDefinition转为实例对象的方法
 		refresh();
 	}
 

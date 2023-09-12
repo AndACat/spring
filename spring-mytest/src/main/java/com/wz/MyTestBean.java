@@ -15,6 +15,7 @@ public class MyTestBean {
 
 
 	public void test(){
+		System.out.println("--------------------------------------------------------------");
 		System.out.println("person = " + person);
 		System.out.println("environmentAware = " + environmentAware);
 		System.out.println("first bean test");
