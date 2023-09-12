@@ -294,8 +294,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				markBeanAsCreated(beanName);
 			}
 
-			StartupStep beanCreation = this.applicationStartup.start("spring.beans.instantiate")
-					.tag("beanName", name);
+			StartupStep beanCreation = this.applicationStartup.start("spring.beans.instantiate").tag("beanName", name);
 			try {
 				if (requiredType != null) {
 					beanCreation.tag("beanType", requiredType::toString);
@@ -326,6 +325,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
+							// 这里的this是DefaultListableBeanFactory, 调用的createBean方法是父类AbstractAutowireCapableBeanFactory的createBean()方法
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {
@@ -1773,8 +1773,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @param mbd the merged bean definition
 	 * @return the object to expose for the bean
 	 */
-	protected Object getObjectForBeanInstance(
-			Object beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) {
+	protected Object getObjectForBeanInstance(Object beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) {
 
 		// Don't let calling code try to dereference the factory if the bean isn't a factory.
 		if (BeanFactoryUtils.isFactoryDereference(name)) {

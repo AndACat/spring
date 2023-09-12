@@ -90,6 +90,7 @@ public abstract class BeanUtils {
 
 	/**
 	 * Convenience method to instantiate a class using its no-arg constructor.
+	 * 实例化对象, 使用无参构造器
 	 * @param clazz class to instantiate
 	 * @return the new instance
 	 * @throws BeanInstantiationException if the bean cannot be instantiated
@@ -120,6 +121,7 @@ public abstract class BeanUtils {
 	 * (for regular Java classes, expecting a standard no-arg setup).
 	 * <p>Note that this method tries to set the constructor accessible
 	 * if given a non-accessible (that is, non-public) constructor.
+	 * <br> 使用clazz对象去实例化对象, 没有参数, 会自动寻找构造器, 默认使用无参构造器, 如果没有, 就自己找主要的默认构造器
 	 * @param clazz the class to instantiate
 	 * @return the new instance
 	 * @throws BeanInstantiationException if the bean cannot be instantiated.
@@ -137,9 +139,11 @@ public abstract class BeanUtils {
 		}
 		Constructor<T> ctor;
 		try {
+			// 得到无参构造器
 			ctor = clazz.getDeclaredConstructor();
 		}
 		catch (NoSuchMethodException ex) {
+			// 如果没有找到无参构造器, 就找主要的构造器
 			ctor = findPrimaryConstructor(clazz);
 			if (ctor == null) {
 				throw new BeanInstantiationException(clazz, "No default constructor found", ex);
@@ -148,6 +152,7 @@ public abstract class BeanUtils {
 		catch (LinkageError err) {
 			throw new BeanInstantiationException(clazz, "Unresolvable class definition", err);
 		}
+		// 调用本类方法
 		return instantiateClass(ctor);
 	}
 
@@ -175,6 +180,7 @@ public abstract class BeanUtils {
 	 * <p>Note that this method tries to set the constructor accessible if given a
 	 * non-accessible (that is, non-public) constructor, and supports Kotlin classes
 	 * with optional parameters and default values.
+	 * <br> 使用构造器, 并传入构造器参数去实例化一个对象
 	 * @param ctor the constructor to instantiate
 	 * @param args the constructor arguments to apply (use {@code null} for an unspecified
 	 * parameter, Kotlin optional parameters and Java primitive types are supported)
@@ -185,27 +191,34 @@ public abstract class BeanUtils {
 	public static <T> T instantiateClass(Constructor<T> ctor, Object... args) throws BeanInstantiationException {
 		Assert.notNull(ctor, "Constructor must not be null");
 		try {
+			// 通过反射的技术, 将构造器设置为public
 			ReflectionUtils.makeAccessible(ctor);
 			if (KotlinDetector.isKotlinReflectPresent() && KotlinDetector.isKotlinType(ctor.getDeclaringClass())) {
 				return KotlinDelegate.instantiateClass(ctor, args);
 			}
 			else {
+				// 得到构造器的参数
 				int parameterCount = ctor.getParameterCount();
 				Assert.isTrue(args.length <= parameterCount, "Can't specify more arguments than constructor parameters");
 				if (parameterCount == 0) {
+					// 如果构造器的参数为0, 则说明是无参构造器, 就直接new出来
 					return ctor.newInstance();
 				}
+				// 如果不是无参构造器, 就得到构造器的参数的个数
 				Class<?>[] parameterTypes = ctor.getParameterTypes();
 				Object[] argsWithDefaultValues = new Object[args.length];
 				for (int i = 0 ; i < args.length; i++) {
 					if (args[i] == null) {
+						// 得到参数类型, 如果传的参数是null的, 则判断是否是基本数据类型, 是: 就得到基本类型的值
 						Class<?> parameterType = parameterTypes[i];
 						argsWithDefaultValues[i] = (parameterType.isPrimitive() ? DEFAULT_TYPE_VALUES.get(parameterType) : null);
 					}
 					else {
+						// 参数不是null的, 直接赋值
 						argsWithDefaultValues[i] = args[i];
 					}
 				}
+				// 通过带参构造器new出对象
 				return ctor.newInstance(argsWithDefaultValues);
 			}
 		}
@@ -271,6 +284,7 @@ public abstract class BeanUtils {
 	 * returns the Java constructor corresponding to the Kotlin primary constructor
 	 * (as defined in the Kotlin specification). Otherwise, in particular for non-Kotlin
 	 * classes, this simply returns {@code null}.
+	 * <br> 这个接口用于返回kotlin的构造器, 如果没有就返回null
 	 * @param clazz the class to check
 	 * @since 5.0
 	 * @see <a href="https://kotlinlang.org/docs/reference/classes.html#constructors">Kotlin docs</a>
@@ -291,6 +305,7 @@ public abstract class BeanUtils {
 	 * <p>Checks {@code Class.getMethod} first, falling back to
 	 * {@code findDeclaredMethod}. This allows to find public methods
 	 * without issues even in environments with restricted Java security settings.
+	 * <br> 返回方法, 先找public的, 没找到就会找private和protected的方法
 	 * @param clazz the class to check
 	 * @param methodName the name of the method to find
 	 * @param paramTypes the parameter types of the method to find
@@ -312,6 +327,7 @@ public abstract class BeanUtils {
 	 * Find a method with the given method name and the given parameter types,
 	 * declared on the given class or one of its superclasses. Will return a public,
 	 * protected, package access, or private method.
+	 * <br> 找到私有方法
 	 * <p>Checks {@code Class.getDeclaredMethod}, cascading upwards to all superclasses.
 	 * @param clazz the class to check
 	 * @param methodName the name of the method to find
