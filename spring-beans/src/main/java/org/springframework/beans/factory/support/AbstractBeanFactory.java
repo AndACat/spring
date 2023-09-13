@@ -246,7 +246,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object beanInstance;
 
 		// Eagerly check singleton cache for manually registered singletons.
-		// 早期检查手动注册到BeanFactory中的单例Bean
+		// 早期检查手动注册到BeanFactory中的单例Bean, 如果在调用时， 已经存在了， 就返回
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			// 这个对象已经存在了
@@ -263,6 +263,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		}
 
 		else {
+			// 当第一次从单例池中没有获取到时， 就执行下面的逻辑
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
 			if (isPrototypeCurrentlyInCreation(beanName)) {
@@ -271,6 +272,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 			// Check if bean definition exists in this factory.
 			BeanFactory parentBeanFactory = getParentBeanFactory();
+			// 如果父工厂不为空， 并且本工厂也没有该bean的BeanDefinition, 就调用父类工厂区创建该Bean
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
 				String nameToLookup = originalBeanName(name);
@@ -291,6 +293,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			if (!typeCheckOnly) {
+				// 标记为正在创建该bean
 				markBeanAsCreated(beanName);
 			}
 
@@ -303,15 +306,19 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
+				// 先创建该bean所dependOn的依赖， 如果没有， 就不会走下面这个循环
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
+						// 如果我正在创建的bean也是被dependOn所依赖的， 就会发生循环引用问题， 就报错
 						if (isDependent(beanName, dep)) {
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
 						}
+						// 记录下我这个bean依赖了这个dependOn， 以后可用于检查是否会出现循环依赖
 						registerDependentBean(dep, beanName);
 						try {
+							// 如果一个bean依赖了别的bean, 则优先创建该bean
 							getBean(dep);
 						}
 						catch (NoSuchBeanDefinitionException ex) {
@@ -322,7 +329,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Create bean instance.
+				// 如果是单例的模式， 就创建该bean
 				if (mbd.isSingleton()) {
+					// 这次再创建的时候， 传入一个ObjectFactory对象， 这个方法和getSingleton(beanName)不同
+					// getSingleton(beanName)： 只查找， 不创建实例对象
+					// getSingleton(beanName, objectFactory): 查找，如果查找不到， 就使用objectFactory创建对象
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
 							// 这里的this是DefaultListableBeanFactory, 调用的createBean方法是父类AbstractAutowireCapableBeanFactory的createBean()方法
@@ -336,9 +347,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw ex;
 						}
 					});
+					// 这个方法作用：?
 					beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
-
+				// 如果是原型模式， 也就是多例模式， 就直接创建
 				else if (mbd.isPrototype()) {
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;

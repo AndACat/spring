@@ -595,7 +595,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
-				// 允许在子类覆盖的方法中, 向BeanFactory中注册额外的PostProcessBeanFactory实例
+				// 允许在子类覆盖的方法中, 向BeanFactory中注册额外的PostProcessBeanFactory实例，默认是个空方法
 				postProcessBeanFactory(beanFactory);
 				// 开始记录启动过程
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
@@ -626,7 +626,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
-				// 用于子类实现的, 用于实现特定的bean初始化, 在spring初始化之前的
+				// 用于子类实现的, 用于实现特定的bean初始化, 在spring初始化之前的， 默认是个空方法
 				onRefresh();
 
 				// Check for listener beans and register them.
@@ -638,7 +638,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
-				// 发布响应的事件
+				// 清空各种资源， 并发布上下文刷新成功响应的事件
 				finishRefresh();
 			}
 
@@ -945,6 +945,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	/**
 	 * Finish the initialization of this context's bean factory,
 	 * initializing all remaining singleton beans.
+	 * <br> 完成实例化所有单例对象的方法
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.

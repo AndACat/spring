@@ -961,16 +961,18 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Trigger initialization of all non-lazy singleton beans...
 		// 触发所有非懒加载Bean的初始化
+		// 循环调用所有的beanName
 		for (String beanName : beanNames) {
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 			// 如果是非抽象的, 单例的, 非懒加载的
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
-				// 如果是FactoryBean
+				// 如果是FactoryBean, 就创建工厂Bean本身,
 				if (isFactoryBean(beanName)) {
 					// 得到Bean, 工厂Bean就是以&开头的
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
-					// 如果是SmartFactoryBean的子类, 并且期望早期初始化, 就初始化
+					// 如果工厂bean是SmartFactoryBean的子类, 并且期望早期初始化, 就初始化
 					if (bean instanceof SmartFactoryBean<?> smartFactoryBean && smartFactoryBean.isEagerInit()) {
+						// 这说明beanName可能是创建的对象， 也可能来自工厂bean
 						getBean(beanName);
 					}
 				}
@@ -983,6 +985,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Trigger post-initialization callback for all applicable beans...
 		// 触发后置初始化的回调函数, 对于所有的bean
+		// 找到所有的SmartInitializingSingleton子类的bean, 并调用其方法
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
 			if (singletonInstance instanceof SmartInitializingSingleton smartSingleton) {

@@ -1,4 +1,4 @@
-package com.wz;
+package com.wz.pojo;
 
 
 import lombok.ToString;

@@ -1,5 +1,6 @@
 package com.wz;
 
+import com.wz.pojo.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.stereotype.Component;
