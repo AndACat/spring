@@ -977,7 +977,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
-					// 不是FactoryBean就直接加载
+					// 不是FactoryBean就直接加载(基本都不是工厂Bean, 所以走这个分支)
 					getBean(beanName);
 				}
 			}
@@ -989,8 +989,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
 			if (singletonInstance instanceof SmartInitializingSingleton smartSingleton) {
-				StartupStep smartInitialize = getApplicationStartup().start("spring.beans.smart-initialize")
-						.tag("beanName", beanName);
+				StartupStep smartInitialize = getApplicationStartup().start("spring.beans.smart-initialize").tag("beanName", beanName);
 				smartSingleton.afterSingletonsInstantiated();
 				smartInitialize.end();
 			}

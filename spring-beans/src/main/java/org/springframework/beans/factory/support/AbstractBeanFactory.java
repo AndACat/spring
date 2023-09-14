@@ -237,11 +237,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @throws BeansException if the bean could not be created
 	 */
 	@SuppressWarnings("unchecked")
-	protected <T> T doGetBean(
-			String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly)
-			throws BeansException {
+	protected <T> T doGetBean(String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly) throws BeansException {
 
-		// 获得转换后的名字, 必要时, 删掉工厂Bean前缀
+		// 获得转换后的名字, 必要时, 删掉工厂Bean前缀, 得到的是一个标准bean的名称
 		String beanName = transformedBeanName(name);
 		Object beanInstance;
 
@@ -259,6 +257,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					logger.trace("Returning cached instance of singleton bean '" + beanName + "'");
 				}
 			}
+			// 如果name和sharedInstance都表示是个工厂bean, 那么就返回sharedInstance本身
+			// 如果name是个标准bean, 但sharedInstance却是个工厂Bean, 那么就getObject
 			beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
@@ -347,7 +347,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw ex;
 						}
 					});
-					// 这个方法作用：?
 					beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 				// 如果是原型模式， 也就是多例模式， 就直接创建
@@ -1330,14 +1329,17 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Quick check on the concurrent map first, with minimal locking.
 		RootBeanDefinition mbd = this.mergedBeanDefinitions.get(beanName);
 		if (mbd != null && !mbd.stale) {
+			// 如果不为空且不需要被合并, 就返回
 			return mbd;
 		}
+		// 否则就计算MergedBeanDefinition
 		return getMergedBeanDefinition(beanName, getBeanDefinition(beanName));
 	}
 
 	/**
 	 * Return a RootBeanDefinition for the given top-level bean, by merging with
 	 * the parent if the given bean's definition is a child bean definition.
+	 * <br> 如果bd是个ChildBeanDefinition, 则返回这个child的parent, 也就是root=child+parent, 然后返回root
 	 * @param beanName the name of the bean definition
 	 * @param bd the original bean definition (Root/ChildBeanDefinition)
 	 * @return a (potentially merged) RootBeanDefinition for the given bean
@@ -1779,11 +1781,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/**
 	 * Get the object for the given bean instance, either the bean
 	 * instance itself or its created object in case of a FactoryBean.
-	 * @param beanInstance the shared bean instance
-	 * @param name the name that may include factory dereference prefix
-	 * @param beanName the canonical bean name
-	 * @param mbd the merged bean definition
-	 * @return the object to expose for the bean
+	 * <br> 获取给定bean对象的实例, 既可以是实例本身, 也可以返回的工厂Bean创建的对象
+	 * @param beanInstance the shared bean instance 共享的实例本身
+	 * @param name the name that may include factory dereference prefix 如果是个工厂bean的话, 那么就是带前缀的工厂bean的名称
+	 * @param beanName the canonical bean name 标准的bean name
+	 * @param mbd the merged bean definition  mergedBeanDefinition 合并后的BeanDefinition
+	 * @return the object to expose for the bean 返回期待的bean对象
 	 */
 	protected Object getObjectForBeanInstance(Object beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) {
 
@@ -1804,10 +1807,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Now we have the bean instance, which may be a normal bean or a FactoryBean.
 		// If it's a FactoryBean, we use it to create a bean instance, unless the
 		// caller actually wants a reference to the factory.
+		// 到这里, 如果name不是工厂bean的名称, 且beanInstance也不是工厂bean, 就返回示例本身
 		if (!(beanInstance instanceof FactoryBean<?> factoryBean)) {
 			return beanInstance;
 		}
-
+		// 接下来, 如果beanInstance是个工厂bean, 但name是个标准bean name, 那么就该调用getObject了
 		Object object = null;
 		if (mbd != null) {
 			mbd.isFactoryBean = true;
@@ -1816,7 +1820,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			object = getCachedObjectForFactoryBean(beanName);
 		}
 		if (object == null) {
-			// Return bean instance from factory.
+			// Return bean instance from factory. 从FactoryBean中返回实例
 			// Caches object obtained from FactoryBean if it is a singleton.
 			if (mbd == null && containsBeanDefinition(beanName)) {
 				mbd = getMergedLocalBeanDefinition(beanName);
