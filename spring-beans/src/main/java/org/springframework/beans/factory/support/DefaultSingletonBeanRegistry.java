@@ -170,6 +170,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		Assert.notNull(singletonFactory, "Singleton factory must not be null");
 		synchronized (this.singletonObjects) {
 			if (!this.singletonObjects.containsKey(beanName)) {
+				// 此时刚刚实例化，还未进行属性填充，放入三级缓存中
 				this.singletonFactories.put(beanName, singletonFactory);
 				this.earlySingletonObjects.remove(beanName);
 				this.registeredSingletons.add(beanName);
@@ -228,6 +229,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 	/**
 	 * <br> 从单例池中找到该bean， 如果没找到，就创建该bean, 使用objectFactory的getObject()方法
+	 * 里面做了一系列处理，包括判断是否bean正处于销毁状态，以及创建完成之后，将其放入一级缓冲中
 	 * Return the (raw) singleton object registered under the given name,
 	 * creating and registering a new one if none registered yet.
 	 * @param beanName the name of the bean
@@ -258,6 +260,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				}
 				try {
 					// 这里调用objectFactory的方法，最终调用的也是AbstractAutowireCapableBeanFactory对象的createBean()方法
+					// 执行完这句话之后，bean就在三级缓存中了
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}

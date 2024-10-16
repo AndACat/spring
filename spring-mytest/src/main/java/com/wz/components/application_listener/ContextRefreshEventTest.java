@@ -1,7 +1,8 @@
-package com.wz;
+package com.wz.components.application_listener;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 /**
@@ -9,9 +10,9 @@ import org.springframework.stereotype.Component;
  * 这里实际监听的是上下文refresh成功的最终事件
  */
 @Component
-public class ApplicationListenerImpl implements ApplicationListener<ApplicationEvent> {
+public class ContextRefreshEventTest implements ApplicationListener<ContextRefreshedEvent> {
 	@Override
-	public void onApplicationEvent(ApplicationEvent event) {
+	public void onApplicationEvent(ContextRefreshedEvent event) {
 		synchronized (this){
 			System.out.println("----------------------------------------------------");
 			System.out.println("event = " + event);

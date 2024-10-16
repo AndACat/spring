@@ -18,14 +18,15 @@ ext {
 
 configure(allprojects) { project ->
 	repositories {
-		mavenCentral()
 		maven {
+			url 'https://maven.aliyun.com/repository/public/'
 			url "https://repo.spring.io/milestone"
 			content {
 				// Netty 5 optional support
 				includeGroup 'io.projectreactor.netty'
 			}
 		}
+		mavenCentral()
 		if (version.contains('-')) {
 			maven { url "https://repo.spring.io/milestone" }
 		}

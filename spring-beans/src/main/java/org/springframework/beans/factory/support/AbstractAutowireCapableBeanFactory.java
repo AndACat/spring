@@ -594,13 +594,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// 将其放入三级缓存中
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
-			// 填充bean的属性
+			// 填充bean的属性  属性填充
 			populateBean(beanName, mbd, instanceWrapper);
 			// 执行bean的init方法
 			exposedObject = initializeBean(beanName, exposedObject, mbd);

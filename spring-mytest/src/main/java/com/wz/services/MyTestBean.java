@@ -1,4 +1,4 @@
-package com.wz;
+package com.wz.services;
 
 import com.wz.pojo.Person;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,5 +20,9 @@ public class MyTestBean {
 		System.out.println("person = " + person);
 		System.out.println("environmentAware = " + environmentAware);
 		System.out.println("first bean test");
+	}
+
+	public String getName(){
+		return "张安";
 	}
 }

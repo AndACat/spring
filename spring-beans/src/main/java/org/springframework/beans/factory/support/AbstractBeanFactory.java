@@ -319,6 +319,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						registerDependentBean(dep, beanName);
 						try {
 							// 如果一个bean依赖了别的bean, 则优先创建该bean
+							// 实际是个递归方法， 在这里实例化了所有的依赖的bean，并将他们注册到三级缓存中（开启了提前暴漏的情况下）
 							getBean(dep);
 						}
 						catch (NoSuchBeanDefinitionException ex) {
@@ -334,8 +335,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					// 这次再创建的时候， 传入一个ObjectFactory对象， 这个方法和getSingleton(beanName)不同
 					// getSingleton(beanName)： 只查找， 不创建实例对象
 					// getSingleton(beanName, objectFactory): 查找，如果查找不到， 就使用objectFactory创建对象
+					// 在这里面，又放入了一级缓存
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
+							// 这里是真正的创建bean, 在里面放到了三级缓存中
 							// 这里的this是DefaultListableBeanFactory, 调用的createBean方法是父类AbstractAutowireCapableBeanFactory的createBean()方法
 							return createBean(beanName, mbd, args);
 						}
